@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const HttpError = require('../models/http-error');
 
 const DUMMY_PLACES = [
   {
@@ -21,24 +22,20 @@ router.get('/:pid', (req, res, next) => {
   });
 
   if (!place) {
-    const error = new Error('Could not find a place with related place id');
-    error.code = 404;
-    return next(error);
+    throw new HttpError('Could not find a place with related place id', 404);
   }
 
   res.json({ place });
 });
 
-router.get('/user/:uid', (req, res) => {
+router.get('/user/:uid', (req, res, next) => {
   const userId = req.params.uid;
   const user = DUMMY_PLACES.find((p) => {
     return p.creator === userId;
   });
 
   if (!user) {
-    const error = new Error('Could not find a place with related user id');
-    error.code = 404;
-    return next(error);
+    throw new HttpError('Could not find a place with related user id', 404);
   }
 
   res.json({ user });
