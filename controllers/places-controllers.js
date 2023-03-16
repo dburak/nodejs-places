@@ -28,17 +28,17 @@ const getPlaceById = (req, res) => {
   res.json({ place });
 };
 
-const getPlaceByUserId = (req, res) => {
+const getPlacesByUserId = (req, res) => {
   const userId = req.params.uid;
-  const user = DUMMY_PLACES.find((p) => {
+  const places = DUMMY_PLACES.filter((p) => {
     return p.creator === userId;
   });
 
-  if (!user) {
-    throw new HttpError('Could not find a place with related user id', 404);
+  if (!places || places.length === 0) {
+    throw new HttpError('Could not find places with related user id', 404);
   }
 
-  res.json({ user });
+  res.json({ places });
 };
 
 const createPlace = (req, res) => {
@@ -79,7 +79,7 @@ const deletePlace = (req, res) => {
 };
 
 exports.getPlaceById = getPlaceById;
-exports.getPlaceByUserId = getPlaceByUserId;
+exports.getPlacesByUserId = getPlacesByUserId;
 exports.createPlace = createPlace;
 exports.updatePlace = updatePlace;
 exports.deletePlace = deletePlace;
