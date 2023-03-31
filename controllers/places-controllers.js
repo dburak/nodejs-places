@@ -4,41 +4,53 @@ const HttpError = require('../models/http-error');
 const getCordsForAddress = require('../util/location');
 const Place = require('../models/place');
 
-let DUMMY_PLACES = [
-  {
-    id: 'p1',
-    title: 'Aspava',
-    description: 'One of the most famous restaurant in Ankara',
-    location: {
-      lat: 39.916526,
-      lng: 32.8170519,
-    },
-    address: 'Emek mah.',
-    creator: 'u1',
-  },
-];
-
-const getPlaceById = (req, res) => {
+const getPlaceById = async (req, res, next) => {
   const placeId = req.params.pid;
-  const place = DUMMY_PLACES.find((p) => {
-    return p.id === placeId;
-  });
+  let place;
 
-  if (!place) {
-    throw new HttpError('Could not find a place with related place id', 404);
+  try {
+    place = await Place.findById(placeId);
+  } catch (err) {
+    const error = new HttpError(
+      'Something went wrong, please try again later.',
+      500
+    );
+
+    return next(error);
   }
 
+  if (!place) {
+    const error = new HttpError('Could not find a place for related id.', 404);
+
+    return next(error);
+  }
   res.json({ place });
 };
 
-const getPlacesByUserId = (req, res) => {
+const getPlacesByUserId = async (req, res, next) => {
   const userId = req.params.uid;
-  const places = DUMMY_PLACES.filter((p) => {
-    return p.creator === userId;
-  });
+  let places;
+
+  try {
+    places = await Place.find({
+      creator: userId,
+    });
+  } catch (err) {
+    const error = new HttpError(
+      'Something went wrong, please try again later.',
+      500
+    );
+
+    return next(error);
+  }
 
   if (!places || places.length === 0) {
-    throw new HttpError('Could not find places with related user id', 404);
+    const err = new HttpError(
+      'Could not find places with related user id',
+      404
+    );
+
+    return next(err);
   }
 
   res.json({ places });
@@ -83,28 +95,40 @@ const createPlace = async (req, res, next) => {
   res.status(201).json({ place: createdPlace });
 };
 
-const updatePlace = (req, res) => {
+const updatePlace = async (req, res, next) => {
   const { title, description } = req.body;
   const placeId = req.params.pid;
 
-  const updatedPlace = { ...DUMMY_PLACES.find((p) => p.id === placeId) }; // create a copy of the array to save possible data failure
-  const placeIndex = DUMMY_PLACES.findIndex((p) => p.id === placeId);
+  let updatedPlace;
+
+  try {
+    updatedPlace = await Place.findById(placeId);
+  } catch (err) {
+    const error = new HttpError(
+      'An error occured while updating, please try again.',
+      500
+    );
+    return next(error);
+  }
+
   updatedPlace.title = title;
   updatedPlace.description = description;
 
-  DUMMY_PLACES[placeIndex] = updatedPlace;
+  await updatedPlace.save();
 
   res.status(200).json({ place: updatedPlace });
 };
 
-const deletePlace = (req, res) => {
+const deletePlace = async (req, res, next) => {
   const placeId = req.params.pid;
 
-  if (!DUMMY_PLACES.find((p) => p.id === placeId)) {
-    throw new HttpError('Could not find a place for the related ID', 404);
+  try {
+    await Place.deleteOne({
+      _id: placeId,
+    });
+  } catch (error) {
+    return next(error);
   }
-
-  DUMMY_PLACES = DUMMY_PLACES.filter((p) => p.id !== placeId);
 
   res.status(200).json({ message: 'The place has been deleted.' });
 };
