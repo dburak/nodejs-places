@@ -1,8 +1,9 @@
-const { v4: uuidv4 } = require('uuid');
 const { validationResult } = require('express-validator');
 const HttpError = require('../models/http-error');
 const getCordsForAddress = require('../util/location');
+const mongoose = require('mongoose');
 const Place = require('../models/place');
+const User = require('../models/user');
 
 const getPlaceById = async (req, res, next) => {
   const placeId = req.params.pid;
@@ -82,8 +83,26 @@ const createPlace = async (req, res, next) => {
     creator,
   });
 
+  let user;
+
   try {
-    await createdPlace.save();
+    user = await User.findById(creator);
+  } catch (error) {
+    return next(error);
+  }
+
+  if (!user) {
+    const error = new HttpError('Could not find user for the related id', 404);
+    return next(error);
+  }
+
+  try {
+    const sess = await mongoose.startSession(); // -- TO ENSURE ALL OPS ARE SUCCESSFULL
+    sess.startTransaction();
+    await createdPlace.save({ session: sess });
+    user.places.push(createdPlace);
+    await user.save({ session: sess });
+    await sess.commitTransaction(); // -- TO ENSURE ALL OPS ARE SUCCESSFULL
   } catch (err) {
     const error = new HttpError(
       'While creating the place an error occured, please try again.',
@@ -121,11 +140,22 @@ const updatePlace = async (req, res, next) => {
 
 const deletePlace = async (req, res, next) => {
   const placeId = req.params.pid;
+  const placeToDelete = await Place.findById(placeId).populate('creator');
+
+  if (!placeToDelete) {
+    const error = new HttpError('There is no place with related id', 404);
+    return next(error);
+  }
 
   try {
+    const sess = await mongoose.startSession(); // -- TO ENSURE ALL OPS ARE SUCCESSFULL
+    sess.startTransaction();
+    placeToDelete.creator.places.pull(placeToDelete);
+    await placeToDelete.creator.save({ session: sess });
     await Place.deleteOne({
       _id: placeId,
     });
+    await sess.commitTransaction(); // -- TO ENSURE ALL OPS ARE SUCCESSFULL
   } catch (error) {
     return next(error);
   }

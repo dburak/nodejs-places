@@ -48,6 +48,7 @@ const signup = async (req, res, next) => {
       name,
       email,
       password,
+      places: []
     });
   } catch (error) {
     return next(error);
