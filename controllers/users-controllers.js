@@ -48,7 +48,7 @@ const signup = async (req, res, next) => {
       name,
       email,
       password,
-      places: []
+      places: [],
     });
   } catch (error) {
     return next(error);
@@ -81,7 +81,10 @@ const login = async (req, res, next) => {
     return next(error);
   }
 
-  res.json({ message: 'Logged in!' });
+  res.json({
+    message: 'Logged in!',
+    user: identifiedUser.toObject({ getters: true }),
+  });
 };
 
 exports.getUsers = getUsers;
