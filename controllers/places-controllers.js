@@ -44,11 +44,8 @@ const getPlacesByUserId = async (req, res, next) => {
     return next(error);
   }
 
-  if (!placesWithUserId || placesWithUserId.places.length === 0) {
-    const err = new HttpError(
-      'Could not find places with related user id',
-      404
-    );
+  if (!placesWithUserId) {
+    const err = new HttpError('Could not find the user', 404);
 
     return next(err);
   }
