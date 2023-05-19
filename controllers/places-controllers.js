@@ -125,7 +125,7 @@ const updatePlace = async (req, res, next) => {
     return next(error);
   }
 
-  if (updatedPlace.creator !== req.userData.userId) {
+  if (updatedPlace.creator.toString() !== req.userData.userId) {
     const error = new HttpError('You are not allowed to edit !', 403);
     return next(error);
   }
@@ -147,7 +147,7 @@ const deletePlace = async (req, res, next) => {
     return next(error);
   }
 
-  if (placeToDelete.creator._id !== req.userData.userId) {
+  if (placeToDelete.creator._id.toString() !== req.userData.userId) {
     const error = new HttpError('You are not allowed to delete !', 403);
     return next(error);
   }
