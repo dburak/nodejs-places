@@ -1,9 +1,0 @@
-{
-  "env": {
-    "DB_USER": "burakkddiker",
-    "DB_PASSWORD": "bd123456",
-    "DB_NAME": "places_mern",
-    "GOOGLE_API_KEY": "AIzaSyANq2WvDbcdPHqlHDtCCw2yy2k8mS9bohEs",
-    "JWT_KEY": "super_secret"
-  }
-}
