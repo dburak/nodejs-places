@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
-const MONGO_URL =
-  'mongodb+srv://burakkddiker:bd123456@cluster0.obq69mi.mongodb.net/places_mern?retryWrites=true&w=majority';
+const MONGO_URL = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.obq69mi.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`;
 
 mongoose
   .connect(MONGO_URL)
